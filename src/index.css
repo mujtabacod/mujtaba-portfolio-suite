@@ -7,33 +7,33 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
 
-    --card: 222 47% 13%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 0%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 16% 22%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 221 70% 45%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 62% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 19% 27%;
-    --input: 217 19% 27%;
-    --ring: 217 91% 60%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
 
     --radius: 0.5rem;
   }
@@ -49,26 +49,26 @@
   body {
     @apply bg-background text-foreground font-sans;
     background-image: 
-      radial-gradient(circle at 25px 25px, rgba(37, 99, 235, 0.05) 2%, transparent 0%), 
-      radial-gradient(circle at 75px 75px, rgba(37, 99, 235, 0.05) 2%, transparent 0%);
+      radial-gradient(circle at 25px 25px, rgba(0, 0, 0, 0.05) 2%, transparent 0%), 
+      radial-gradient(circle at 75px 75px, rgba(0, 0, 0, 0.05) 2%, transparent 0%);
     background-size: 100px 100px;
   }
 
   /* Custom classes */
   .glass {
-    @apply bg-secondary/30 backdrop-blur-lg border border-white/10 shadow-lg;
+    @apply bg-white/70 backdrop-blur-lg border border-black/10 shadow-md;
   }
 
   .hero-gradient {
-    @apply bg-gradient-to-bl from-blue-600/20 via-transparent to-purple-500/20;
+    @apply bg-gradient-to-bl from-black/10 via-transparent to-black/10;
   }
 
   .text-gradient {
-    @apply bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text;
+    @apply bg-gradient-to-r from-black to-gray-600 text-transparent bg-clip-text;
   }
 
   .card-hover {
-    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20;
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-black/10;
   }
   
   .highlight {
@@ -76,7 +76,7 @@
   }
 
   .highlight::after {
-    @apply content-[''] absolute bottom-1 left-0 w-full h-[0.2em] bg-primary/30 -z-10;
+    @apply content-[''] absolute bottom-1 left-0 w-full h-[0.2em] bg-black/20 -z-10;
   }
 }
 
@@ -109,14 +109,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 0.5);
+  background: rgba(240, 240, 240, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.8);
+  background: rgba(0, 0, 0, 0.5);
 }
