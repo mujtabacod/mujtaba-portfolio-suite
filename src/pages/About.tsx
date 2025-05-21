@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, FileText, Book, Briefcase } from 'lucide-react';
+import { ArrowRight, FileText, Book, Briefcase, Award, Star, CheckCircle } from 'lucide-react';
 import SectionContainer, { SectionTitle } from '@/components/ui/section-container';
 import { Separator } from '@/components/ui/separator';
 import { skills } from '@/data/mockData';
@@ -143,6 +143,8 @@ const About = () => {
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                     <li>GIAIC Certified Web & App Developer</li>
                     <li>AI, Cloud, and Web 3.0 Programs (PIAIC/GIAIC)</li>
+                    <li>Advanced React & Frontend Development</li>
+                    <li>UI/UX Design Fundamentals</li>
                   </ul>
                 </div>
               </div>
@@ -165,8 +167,99 @@ const About = () => {
                   code editors, and TV streaming platforms. Focused on delivering high-quality, 
                   responsive web applications with exceptional user experiences.
                 </p>
+                <ul className="mt-3 list-disc list-inside space-y-1 text-muted-foreground">
+                  <li>Created dynamic, responsive user interfaces with React and Next.js</li>
+                  <li>Implemented state management solutions using Redux and React Query</li>
+                  <li>Built RESTful APIs with Node.js and Express</li>
+                  <li>Integrated AI solutions for enhanced user experiences</li>
+                </ul>
               </div>
             </div>
+          </div>
+        </div>
+      </SectionContainer>
+      
+      {/* Services Section */}
+      <SectionContainer>
+        <SectionTitle 
+          title="My Services" 
+          subtitle="High-quality web development services tailored to your needs"
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="glass p-6 rounded-lg transition-all duration-300 hover:transform hover:scale-105 animate-on-scroll">
+            <div className="bg-primary/10 p-3 rounded-full w-fit mb-4">
+              <CheckCircle size={24} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Frontend Development</h3>
+            <p className="text-muted-foreground">
+              Creating beautiful, responsive user interfaces using React, Next.js, and Tailwind CSS 
+              with smooth animations and exceptional user experience.
+            </p>
+          </div>
+          
+          <div className="glass p-6 rounded-lg transition-all duration-300 hover:transform hover:scale-105 animate-on-scroll delay-100">
+            <div className="bg-primary/10 p-3 rounded-full w-fit mb-4">
+              <CheckCircle size={24} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Backend Development</h3>
+            <p className="text-muted-foreground">
+              Building robust server-side applications with Node.js, Express, and MongoDB,
+              including API development, authentication, and database design.
+            </p>
+          </div>
+          
+          <div className="glass p-6 rounded-lg transition-all duration-300 hover:transform hover:scale-105 animate-on-scroll delay-200">
+            <div className="bg-primary/10 p-3 rounded-full w-fit mb-4">
+              <CheckCircle size={24} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Full-Stack Solutions</h3>
+            <p className="text-muted-foreground">
+              Delivering end-to-end web applications with seamless integration between
+              frontend and backend systems for optimal performance and reliability.
+            </p>
+          </div>
+        </div>
+      </SectionContainer>
+
+      {/* Achievements Section */}
+      <SectionContainer className="bg-secondary/30">
+        <SectionTitle 
+          title="Achievements" 
+          subtitle="Key milestones in my professional journey"
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="glass p-6 rounded-lg text-center animate-on-scroll">
+            <div className="bg-primary/10 p-3 rounded-full mx-auto w-fit mb-4">
+              <Award size={24} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-1">30+</h3>
+            <p className="text-muted-foreground">Projects Completed</p>
+          </div>
+          
+          <div className="glass p-6 rounded-lg text-center animate-on-scroll delay-100">
+            <div className="bg-primary/10 p-3 rounded-full mx-auto w-fit mb-4">
+              <Star size={24} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-1">20+</h3>
+            <p className="text-muted-foreground">Satisfied Clients</p>
+          </div>
+          
+          <div className="glass p-6 rounded-lg text-center animate-on-scroll delay-200">
+            <div className="bg-primary/10 p-3 rounded-full mx-auto w-fit mb-4">
+              <Award size={24} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-1">4+</h3>
+            <p className="text-muted-foreground">Years Experience</p>
+          </div>
+          
+          <div className="glass p-6 rounded-lg text-center animate-on-scroll delay-300">
+            <div className="bg-primary/10 p-3 rounded-full mx-auto w-fit mb-4">
+              <Star size={24} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-1">5+</h3>
+            <p className="text-muted-foreground">Certifications</p>
           </div>
         </div>
       </SectionContainer>
