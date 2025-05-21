@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowDown, Github } from 'lucide-react';
@@ -75,7 +74,7 @@ const Home = () => {
               <div className="w-64 h-64 md:w-80 md:h-80 rounded-full border-4 border-primary/30 flex items-center justify-center relative animate-fade-in p-2">
                 <div className="w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/20 overflow-hidden">
                   <img 
-                    src="/placeholder.svg" 
+                    src="https://mujtaba-mj.vercel.app/_next/image?url=%2Fhero.jpg&w=1920&q=75" 
                     alt="Syed Mujtaba Abbas"
                     className="w-full h-full object-cover"
                   />
