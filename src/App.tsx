@@ -13,6 +13,11 @@ import AdminLayout from "./components/layouts/AdminLayout";
 
 // Public Pages
 import Home from "./pages/Home";
+import About from "./pages/About";
+import Projects from "./pages/Projects";
+import Resume from "./pages/Resume";
+import Blog from "./pages/Blog";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 // Admin Pages
@@ -31,6 +36,11 @@ const App = () => (
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+            <Route path="/about" element={<MainLayout><About /></MainLayout>} />
+            <Route path="/projects" element={<MainLayout><Projects /></MainLayout>} />
+            <Route path="/resume" element={<MainLayout><Resume /></MainLayout>} />
+            <Route path="/blog" element={<MainLayout><Blog /></MainLayout>} />
+            <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={<Login />} />
