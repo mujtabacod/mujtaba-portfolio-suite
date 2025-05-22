@@ -1,444 +1,410 @@
 
 import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { PlusCircle, Edit, Trash2, Search, XCircle, Calendar } from 'lucide-react';
-import { blogPosts } from '@/data/mockData';
-import { toast } from 'sonner';
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableRow, 
+  TableHead, 
+  TableCell
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Search, Plus, Edit, Trash, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { blogPosts as initialBlogPosts } from '@/data/mockData';
+import { toast } from "sonner";
+
+// Define the BlogPost type based on our existing data
+interface BlogPost {
+  id: number | string;
+  title: string;
+  excerpt: string;
+  content: string;
+  coverImage: string;
+  date: string;
+  author: string;
+  readTime: string;
+  category: string;
+  publishedDate?: string;
+  tags?: string[];
+  imageUrl?: string;
+}
 
 const AdminBlog = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [blogList, setBlogList] = useState([...blogPosts]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentPost, setCurrentPost] = useState<any>(null);
-  const [newPost, setNewPost] = useState({
-    title: '',
-    excerpt: '',
-    content: '',
-    publishedDate: new Date().toISOString().split('T')[0],
-    tags: '',
-    imageUrl: '',
+  const [currentBlogPost, setCurrentBlogPost] = useState<BlogPost | null>(null);
+  const [newTag, setNewTag] = useState("");
+
+  // Form state
+  const [formData, setFormData] = useState<BlogPost>({
+    id: "",
+    title: "",
+    excerpt: "",
+    content: "",
+    coverImage: "",
+    category: "",
+    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+    author: "Syed Mujtaba Abbas",
+    readTime: "5 min read",
+    tags: [],
   });
 
-  const filteredPosts = blogList.filter(post => 
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter blog posts based on search query
+  const filteredPosts = blogPosts.filter(post => 
+    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddPost = () => {
-    const tags = newPost.tags.split(',').map(tag => tag.trim());
-    
-    const postToAdd = {
-      id: (blogList.length + 1).toString(),
-      title: newPost.title,
-      excerpt: newPost.excerpt,
-      content: newPost.content,
-      publishedDate: newPost.publishedDate,
-      tags,
-      imageUrl: newPost.imageUrl || '/placeholder.svg',
-    };
-    
-    setBlogList([...blogList, postToAdd]);
-    setIsAddDialogOpen(false);
-    setNewPost({
-      title: '',
-      excerpt: '',
-      content: '',
-      publishedDate: new Date().toISOString().split('T')[0],
-      tags: '',
-      imageUrl: '',
-    });
-    toast.success('Blog post added successfully');
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleEditPost = () => {
-    if (!currentPost) return;
-    
-    const tags = typeof currentPost.tags === 'string' 
-      ? currentPost.tags.split(',').map((tag: string) => tag.trim())
-      : currentPost.tags;
-    
-    const updatedPost = {
-      ...currentPost,
-      tags,
-    };
-    
-    const updatedPosts = blogList.map(post => 
-      post.id === updatedPost.id ? updatedPost : post
-    );
-    
-    setBlogList(updatedPosts);
-    setIsEditDialogOpen(false);
-    setCurrentPost(null);
-    toast.success('Blog post updated successfully');
+  const handleAddTag = () => {
+    if (newTag.trim() && !formData.tags?.includes(newTag.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...(prev.tags || []), newTag.trim()]
+      }));
+      setNewTag("");
+    }
   };
 
-  const handleDeletePost = () => {
-    if (!currentPost) return;
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
+    }));
+  };
+
+  const handleAddBlogPost = () => {
+    // Generate a unique ID for the new blog post
+    const newId = blogPosts.length > 0 
+      ? Math.max(...blogPosts.map(post => typeof post.id === 'number' ? post.id : 0)) + 1 
+      : 1;
     
-    const updatedPosts = blogList.filter(post => post.id !== currentPost.id);
-    setBlogList(updatedPosts);
+    const newBlogPost: BlogPost = {
+      ...formData,
+      id: newId,
+      coverImage: formData.coverImage || formData.imageUrl || "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1470&auto=format&fit=crop",
+    };
+
+    setBlogPosts([...blogPosts, newBlogPost]);
+    setIsDialogOpen(false);
+    resetForm();
+    
+    toast.success("Blog post added successfully!");
+  };
+
+  const handleEditBlogPost = () => {
+    if (!currentBlogPost) return;
+    
+    const updatedBlogPost: BlogPost = {
+      ...formData,
+      coverImage: formData.coverImage || formData.imageUrl || currentBlogPost.coverImage,
+    };
+
+    setBlogPosts(blogPosts.map(post => 
+      post.id === currentBlogPost.id ? updatedBlogPost : post
+    ));
+    setIsDialogOpen(false);
+    resetForm();
+    
+    toast.success("Blog post updated successfully!");
+  };
+
+  const handleDeleteBlogPost = () => {
+    if (!currentBlogPost) return;
+    
+    setBlogPosts(blogPosts.filter(post => post.id !== currentBlogPost.id));
     setIsDeleteDialogOpen(false);
-    setCurrentPost(null);
-    toast.success('Blog post deleted successfully');
+    setCurrentBlogPost(null);
+    
+    toast.success("Blog post deleted successfully!");
   };
 
-  const openEditDialog = (post: any) => {
-    setCurrentPost({
+  const openAddDialog = () => {
+    resetForm();
+    setCurrentBlogPost(null);
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (post: BlogPost) => {
+    setCurrentBlogPost(post);
+    setFormData({
       ...post,
-      tags: Array.isArray(post.tags) ? post.tags.join(', ') : post.tags
+      tags: post.tags || []
     });
-    setIsEditDialogOpen(true);
+    setIsDialogOpen(true);
   };
 
-  const openDeleteDialog = (post: any) => {
-    setCurrentPost(post);
+  const openDeleteDialog = (post: BlogPost) => {
+    setCurrentBlogPost(post);
     setIsDeleteDialogOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      id: "",
+      title: "",
+      excerpt: "",
+      content: "",
+      coverImage: "",
+      category: "",
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      author: "Syed Mujtaba Abbas",
+      readTime: "5 min read",
+      tags: [],
+    });
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Blog Management</h1>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Blog Post
+        <h1 className="text-3xl font-bold">Blog Posts</h1>
+        <Button
+          onClick={openAddDialog}
+          className="bg-primary hover:bg-primary/90"
+        >
+          <Plus size={18} className="mr-2" /> Add New Post
         </Button>
       </div>
-
-      <Card className="bg-secondary/20">
+      
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        <Input
+          placeholder="Search blog posts..."
+          className="pl-10"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      
+      {/* Blog Posts Table */}
+      <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>All Blog Posts</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search blog posts..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button 
-                  className="absolute right-2 top-2.5" 
-                  onClick={() => setSearchTerm('')}
-                >
-                  <XCircle className="h-4 w-4 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-          </div>
-          <CardDescription>Manage your blog posts</CardDescription>
+          <CardTitle>Manage Blog Posts</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[250px]">Title</TableHead>
-                <TableHead>Published Date</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead className="hidden md:table-cell">Excerpt</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPosts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No blog posts found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredPosts.map((post) => (
-                  <TableRow key={post.id}>
-                    <TableCell className="font-medium">{post.title}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                        {post.publishedDate}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {post.tags.slice(0, 2).map((tag, index) => (
-                          <span 
-                            key={index} 
-                            className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {post.tags.length > 2 && (
-                          <span className="bg-secondary px-2 py-1 rounded-full text-xs">
-                            +{post.tags.length - 2}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell max-w-xs truncate">
-                      {post.excerpt}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => openEditDialog(post)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-destructive hover:bg-destructive/10"
-                          onClick={() => openDeleteDialog(post)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {filteredPosts.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-muted-foreground">No blog posts found</p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead className="hidden md:table-cell">Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredPosts.map((post) => (
+                    <TableRow key={post.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-12 h-12 rounded bg-secondary/50 flex-shrink-0 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${post.coverImage})` }}
+                          />
+                          <div>
+                            <div className="font-medium truncate max-w-[200px]">{post.title}</div>
+                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                              {post.excerpt}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="outline">{post.category}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-muted-foreground">
+                        {post.date}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => openEditDialog(post)}
+                          >
+                            <Edit size={18} className="text-muted-foreground" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => openDeleteDialog(post)}
+                          >
+                            <Trash size={18} className="text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {/* Add Blog Post Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[625px]">
+      
+      {/* Add/Edit Blog Post Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add New Blog Post</DialogTitle>
-            <DialogDescription>
-              Add a new blog post to your website. Click save when you're done.
-            </DialogDescription>
+            <DialogTitle>
+              {currentBlogPost ? "Edit Blog Post" : "Add New Blog Post"}
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Title
-              </Label>
-              <Input
-                id="title"
-                value={newPost.title}
-                onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                className="col-span-3"
+            <div className="grid gap-2">
+              <Label htmlFor="title">Title</Label>
+              <Input 
+                id="title" 
+                name="title" 
+                value={formData.title}
+                onChange={handleInputChange}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="excerpt" className="text-right">
-                Excerpt
-              </Label>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="category">Category</Label>
               <Input
-                id="excerpt"
-                value={newPost.excerpt}
-                onChange={(e) => setNewPost({...newPost, excerpt: e.target.value})}
-                className="col-span-3"
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
               />
             </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="content" className="text-right pt-2">
-                Content
-              </Label>
-              <Textarea
-                id="content"
-                value={newPost.content}
-                onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                className="col-span-3"
-                rows={8}
+            
+            <div className="grid gap-2">
+              <Label htmlFor="excerpt">Excerpt</Label>
+              <Textarea 
+                id="excerpt" 
+                name="excerpt" 
+                value={formData.excerpt}
+                onChange={handleInputChange}
+                rows={2}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="publishedDate" className="text-right">
-                Date
-              </Label>
-              <Input
-                id="publishedDate"
-                type="date"
-                value={newPost.publishedDate}
-                onChange={(e) => setNewPost({...newPost, publishedDate: e.target.value})}
-                className="col-span-3"
+            
+            <div className="grid gap-2">
+              <Label htmlFor="content">Content</Label>
+              <Textarea 
+                id="content" 
+                name="content" 
+                value={formData.content}
+                onChange={handleInputChange}
+                rows={6}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="tags" className="text-right">
-                Tags
-              </Label>
-              <Input
-                id="tags"
-                value={newPost.tags}
-                onChange={(e) => setNewPost({...newPost, tags: e.target.value})}
-                className="col-span-3"
-                placeholder="Web, React, UI/UX (comma separated)"
+            
+            <div className="grid gap-2">
+              <Label htmlFor="coverImage">Cover Image URL</Label>
+              <Input 
+                id="coverImage" 
+                name="coverImage" 
+                value={formData.coverImage}
+                onChange={handleInputChange}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="imageUrl"
-                value={newPost.imageUrl}
-                onChange={(e) => setNewPost({...newPost, imageUrl: e.target.value})}
-                className="col-span-3"
-              />
+            
+            <div className="grid gap-2">
+              <Label htmlFor="tags">Tags</Label>
+              <div className="flex gap-2">
+                <Input 
+                  id="tags" 
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add a tag"
+                  className="flex-grow"
+                />
+                <Button 
+                  type="button"
+                  variant="secondary"
+                  onClick={handleAddTag}
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.tags?.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                    {tag}
+                    <X 
+                      size={14} 
+                      className="cursor-pointer" 
+                      onClick={() => handleRemoveTag(tag)}
+                    />
+                  </Badge>
+                ))}
+              </div>
             </div>
           </div>
+          
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" onClick={handleAddPost}>
-              Add Post
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Blog Post Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[625px]">
-          <DialogHeader>
-            <DialogTitle>Edit Blog Post</DialogTitle>
-            <DialogDescription>
-              Make changes to the blog post. Click save when you're done.
-            </DialogDescription>
-          </DialogHeader>
-          {currentPost && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-title" className="text-right">
-                  Title
-                </Label>
-                <Input
-                  id="edit-title"
-                  value={currentPost.title}
-                  onChange={(e) => setCurrentPost({...currentPost, title: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-excerpt" className="text-right">
-                  Excerpt
-                </Label>
-                <Input
-                  id="edit-excerpt"
-                  value={currentPost.excerpt}
-                  onChange={(e) => setCurrentPost({...currentPost, excerpt: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="edit-content" className="text-right pt-2">
-                  Content
-                </Label>
-                <Textarea
-                  id="edit-content"
-                  value={currentPost.content}
-                  onChange={(e) => setCurrentPost({...currentPost, content: e.target.value})}
-                  className="col-span-3"
-                  rows={8}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-publishedDate" className="text-right">
-                  Date
-                </Label>
-                <Input
-                  id="edit-publishedDate"
-                  type="date"
-                  value={currentPost.publishedDate}
-                  onChange={(e) => setCurrentPost({...currentPost, publishedDate: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-tags" className="text-right">
-                  Tags
-                </Label>
-                <Input
-                  id="edit-tags"
-                  value={currentPost.tags}
-                  onChange={(e) => setCurrentPost({...currentPost, tags: e.target.value})}
-                  className="col-span-3"
-                  placeholder="Web, React, UI/UX (comma separated)"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-imageUrl" className="text-right">
-                  Image URL
-                </Label>
-                <Input
-                  id="edit-imageUrl"
-                  value={currentPost.imageUrl}
-                  onChange={(e) => setCurrentPost({...currentPost, imageUrl: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" onClick={handleEditPost}>
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Blog Post Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Delete Blog Post</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this blog post? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          {currentPost && (
-            <div className="py-4">
-              <p className="font-medium">{currentPost.title}</p>
-              <p className="text-sm text-muted-foreground mt-2">{currentPost.excerpt}</p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button 
-              type="submit" 
+              onClick={currentBlogPost ? handleEditBlogPost : handleAddBlogPost}
+            >
+              {currentBlogPost ? "Save Changes" : "Add Post"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-foreground">
+                "{currentBlogPost?.title}"
+              </span>
+              ? This action cannot be undone.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
               variant="destructive" 
-              onClick={handleDeletePost}
+              onClick={handleDeleteBlogPost}
             >
               Delete
             </Button>

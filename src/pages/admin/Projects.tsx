@@ -1,432 +1,459 @@
 
 import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { PlusCircle, Edit, Trash2, Search, XCircle } from 'lucide-react';
-import { projects } from '@/data/mockData';
-import { toast } from 'sonner';
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableRow, 
+  TableHead, 
+  TableCell
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Search, Plus, Edit, Trash, X, ExternalLink, Github } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { projects as initialProjects } from '@/data/mockData';
+import { toast } from "sonner";
+
+// Define the Project type based on our existing data
+interface Project {
+  id: number | string;
+  title: string;
+  description: string;
+  image?: string;
+  imageUrl?: string;
+  technologies: string[];
+  projectUrl?: string;
+  githubUrl?: string;
+  featured: boolean;
+  coverImage?: string;
+}
 
 const AdminProjects = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [projectsList, setProjectsList] = useState([...projects]);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentProject, setCurrentProject] = useState<any>(null);
-  const [newProject, setNewProject] = useState({
-    title: '',
-    description: '',
-    imageUrl: '',
-    technologies: '',
-    projectUrl: '',
-    githubUrl: '',
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [newTechnology, setNewTechnology] = useState("");
+
+  // Form state
+  const [formData, setFormData] = useState<Project>({
+    id: "",
+    title: "",
+    description: "",
+    image: "",
+    technologies: [],
+    projectUrl: "",
+    githubUrl: "",
+    featured: false,
   });
 
-  const filteredProjects = projectsList.filter(project => 
-    project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter projects based on search query
+  const filteredProjects = projects.filter(project => 
+    project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.technologies.some(tech => tech.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSwitchChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      featured: checked
+    }));
+  };
+
+  const handleAddTechnology = () => {
+    if (newTechnology.trim() && !formData.technologies.includes(newTechnology.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        technologies: [...prev.technologies, newTechnology.trim()]
+      }));
+      setNewTechnology("");
+    }
+  };
+
+  const handleRemoveTechnology = (techToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      technologies: prev.technologies.filter(tech => tech !== techToRemove)
+    }));
+  };
+
   const handleAddProject = () => {
-    const technologies = newProject.technologies.split(',').map(tech => tech.trim());
+    // Generate a unique ID for the new project
+    const newId = projects.length > 0 
+      ? Math.max(...projects.map(project => typeof project.id === 'number' ? project.id : 0)) + 1 
+      : 1;
     
-    const projectToAdd = {
-      id: (projectsList.length + 1).toString(),
-      title: newProject.title,
-      description: newProject.description,
-      imageUrl: newProject.imageUrl || '/placeholder.svg',
-      technologies,
-      projectUrl: newProject.projectUrl,
-      githubUrl: newProject.githubUrl,
+    const newProject: Project = {
+      ...formData,
+      id: newId,
+      image: formData.image || formData.imageUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1470&auto=format&fit=crop",
+      featured: formData.featured || false,
     };
+
+    setProjects([...projects, newProject]);
+    setIsDialogOpen(false);
+    resetForm();
     
-    setProjectsList([...projectsList, projectToAdd]);
-    setIsAddDialogOpen(false);
-    setNewProject({
-      title: '',
-      description: '',
-      imageUrl: '',
-      technologies: '',
-      projectUrl: '',
-      githubUrl: '',
-    });
-    toast.success('Project added successfully');
+    toast.success("Project added successfully!");
   };
 
   const handleEditProject = () => {
     if (!currentProject) return;
     
-    const technologies = typeof currentProject.technologies === 'string' 
-      ? currentProject.technologies.split(',').map((tech: string) => tech.trim())
-      : currentProject.technologies;
-    
-    const updatedProject = {
-      ...currentProject,
-      technologies,
+    const updatedProject: Project = {
+      ...formData,
+      image: formData.image || formData.imageUrl || currentProject.image,
+      featured: formData.featured,
     };
+
+    setProjects(projects.map(project => 
+      project.id === currentProject.id ? updatedProject : project
+    ));
+    setIsDialogOpen(false);
+    resetForm();
     
-    const updatedProjects = projectsList.map(project => 
-      project.id === updatedProject.id ? updatedProject : project
-    );
-    
-    setProjectsList(updatedProjects);
-    setIsEditDialogOpen(false);
-    setCurrentProject(null);
-    toast.success('Project updated successfully');
+    toast.success("Project updated successfully!");
   };
 
   const handleDeleteProject = () => {
     if (!currentProject) return;
     
-    const updatedProjects = projectsList.filter(project => project.id !== currentProject.id);
-    setProjectsList(updatedProjects);
+    setProjects(projects.filter(project => project.id !== currentProject.id));
     setIsDeleteDialogOpen(false);
     setCurrentProject(null);
-    toast.success('Project deleted successfully');
+    
+    toast.success("Project deleted successfully!");
   };
 
-  const openEditDialog = (project: any) => {
-    setCurrentProject({
-      ...project,
-      technologies: Array.isArray(project.technologies) 
-        ? project.technologies.join(', ')
-        : project.technologies
+  const openAddDialog = () => {
+    resetForm();
+    setCurrentProject(null);
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (project: Project) => {
+    setCurrentProject(project);
+    setFormData({
+      ...project
     });
-    setIsEditDialogOpen(true);
+    setIsDialogOpen(true);
   };
 
-  const openDeleteDialog = (project: any) => {
+  const openDeleteDialog = (project: Project) => {
     setCurrentProject(project);
     setIsDeleteDialogOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      id: "",
+      title: "",
+      description: "",
+      image: "",
+      technologies: [],
+      projectUrl: "",
+      githubUrl: "",
+      featured: false,
+    });
+    setNewTechnology("");
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Projects Management</h1>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Project
+        <h1 className="text-3xl font-bold">Projects</h1>
+        <Button
+          onClick={openAddDialog}
+          className="bg-primary hover:bg-primary/90"
+        >
+          <Plus size={18} className="mr-2" /> Add New Project
         </Button>
       </div>
-
-      <Card className="bg-secondary/20">
+      
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        <Input
+          placeholder="Search projects..."
+          className="pl-10"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      
+      {/* Projects Table */}
+      <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>All Projects</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search projects..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <button 
-                  className="absolute right-2 top-2.5" 
-                  onClick={() => setSearchTerm('')}
-                >
-                  <XCircle className="h-4 w-4 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-          </div>
-          <CardDescription>Manage your portfolio projects</CardDescription>
+          <CardTitle>Manage Projects</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Technologies</TableHead>
-                <TableHead className="hidden md:table-cell">Description</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProjects.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    No projects found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredProjects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell className="font-medium">{project.title}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {project.technologies.slice(0, 2).map((tech, index) => (
-                          <span 
-                            key={index} 
-                            className="bg-secondary px-2 py-1 rounded-full text-xs"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                        {project.technologies.length > 2 && (
-                          <span className="bg-secondary px-2 py-1 rounded-full text-xs">
-                            +{project.technologies.length - 2}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell max-w-xs truncate">
-                      {project.description}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => openEditDialog(project)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-destructive hover:bg-destructive/10"
-                          onClick={() => openDeleteDialog(project)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {filteredProjects.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-muted-foreground">No projects found</p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="hidden md:table-cell">Technologies</TableHead>
+                    <TableHead className="hidden md:table-cell">Featured</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredProjects.map((project) => (
+                    <TableRow key={project.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-12 h-12 rounded bg-secondary/50 flex-shrink-0 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${project.image})` }}
+                          />
+                          <div>
+                            <div className="font-medium truncate max-w-[200px]">{project.title}</div>
+                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                              {project.description}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex flex-wrap gap-1">
+                          {project.technologies.slice(0, 3).map((tech, index) => (
+                            <Badge key={index} variant="outline">{tech}</Badge>
+                          ))}
+                          {project.technologies.length > 3 && (
+                            <Badge variant="outline">+{project.technologies.length - 3}</Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {project.featured ? (
+                          <Badge className="bg-green-500 text-white hover:bg-green-600">Yes</Badge>
+                        ) : (
+                          <Badge variant="outline">No</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => openEditDialog(project)}
+                          >
+                            <Edit size={18} className="text-muted-foreground" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => openDeleteDialog(project)}
+                          >
+                            <Trash size={18} className="text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {/* Add Project Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
+      
+      {/* Add/Edit Project Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add New Project</DialogTitle>
-            <DialogDescription>
-              Add a new project to your portfolio. Click save when you're done.
-            </DialogDescription>
+            <DialogTitle>
+              {currentProject ? "Edit Project" : "Add New Project"}
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Title
-              </Label>
-              <Input
-                id="title"
-                value={newProject.title}
-                onChange={(e) => setNewProject({...newProject, title: e.target.value})}
-                className="col-span-3"
+            <div className="grid gap-2">
+              <Label htmlFor="title">Title</Label>
+              <Input 
+                id="title" 
+                name="title" 
+                value={formData.title}
+                onChange={handleInputChange}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
-              </Label>
-              <Input
-                id="description"
-                value={newProject.description}
-                onChange={(e) => setNewProject({...newProject, description: e.target.value})}
-                className="col-span-3"
+            
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                name="description" 
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={3}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="imageUrl"
-                value={newProject.imageUrl}
-                onChange={(e) => setNewProject({...newProject, imageUrl: e.target.value})}
-                className="col-span-3"
+            
+            <div className="grid gap-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input 
+                id="image" 
+                name="image" 
+                value={formData.image}
+                onChange={handleInputChange}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="technologies" className="text-right">
-                Technologies
-              </Label>
-              <Input
-                id="technologies"
-                value={newProject.technologies}
-                onChange={(e) => setNewProject({...newProject, technologies: e.target.value})}
-                className="col-span-3"
-                placeholder="React, TypeScript, Tailwind (comma separated)"
-              />
+            
+            <div className="grid gap-2">
+              <Label htmlFor="technologies">Technologies</Label>
+              <div className="flex gap-2">
+                <Input 
+                  id="technologies" 
+                  value={newTechnology}
+                  onChange={(e) => setNewTechnology(e.target.value)}
+                  placeholder="Add a technology"
+                  className="flex-grow"
+                />
+                <Button 
+                  type="button"
+                  variant="secondary"
+                  onClick={handleAddTechnology}
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.technologies.map((tech) => (
+                  <Badge key={tech} variant="secondary" className="flex items-center gap-1">
+                    {tech}
+                    <X 
+                      size={14} 
+                      className="cursor-pointer" 
+                      onClick={() => handleRemoveTechnology(tech)}
+                    />
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="projectUrl" className="text-right">
-                Project URL
-              </Label>
-              <Input
-                id="projectUrl"
-                value={newProject.projectUrl}
-                onChange={(e) => setNewProject({...newProject, projectUrl: e.target.value})}
-                className="col-span-3"
-              />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="projectUrl">Project URL</Label>
+                <div className="flex">
+                  <Input 
+                    id="projectUrl" 
+                    name="projectUrl" 
+                    value={formData.projectUrl || ""}
+                    onChange={handleInputChange}
+                    placeholder="https://"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    disabled={!formData.projectUrl}
+                    className="ml-2"
+                    onClick={() => window.open(formData.projectUrl, '_blank')}
+                  >
+                    <ExternalLink size={18} />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="githubUrl">GitHub URL</Label>
+                <div className="flex">
+                  <Input 
+                    id="githubUrl" 
+                    name="githubUrl" 
+                    value={formData.githubUrl || ""}
+                    onChange={handleInputChange}
+                    placeholder="https://github.com/"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    disabled={!formData.githubUrl}
+                    className="ml-2"
+                    onClick={() => window.open(formData.githubUrl, '_blank')}
+                  >
+                    <Github size={18} />
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="githubUrl" className="text-right">
-                GitHub URL
-              </Label>
-              <Input
-                id="githubUrl"
-                value={newProject.githubUrl}
-                onChange={(e) => setNewProject({...newProject, githubUrl: e.target.value})}
-                className="col-span-3"
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.featured}
+                onCheckedChange={handleSwitchChange}
+                id="featured"
               />
+              <Label htmlFor="featured">Featured Project</Label>
             </div>
           </div>
+          
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" onClick={handleAddProject}>
-              Add Project
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Project Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
-            <DialogDescription>
-              Make changes to the project. Click save when you're done.
-            </DialogDescription>
-          </DialogHeader>
-          {currentProject && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-title" className="text-right">
-                  Title
-                </Label>
-                <Input
-                  id="edit-title"
-                  value={currentProject.title}
-                  onChange={(e) => setCurrentProject({...currentProject, title: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-description" className="text-right">
-                  Description
-                </Label>
-                <Input
-                  id="edit-description"
-                  value={currentProject.description}
-                  onChange={(e) => setCurrentProject({...currentProject, description: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-imageUrl" className="text-right">
-                  Image URL
-                </Label>
-                <Input
-                  id="edit-imageUrl"
-                  value={currentProject.imageUrl}
-                  onChange={(e) => setCurrentProject({...currentProject, imageUrl: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-technologies" className="text-right">
-                  Technologies
-                </Label>
-                <Input
-                  id="edit-technologies"
-                  value={currentProject.technologies}
-                  onChange={(e) => setCurrentProject({...currentProject, technologies: e.target.value})}
-                  className="col-span-3"
-                  placeholder="React, TypeScript, Tailwind (comma separated)"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-projectUrl" className="text-right">
-                  Project URL
-                </Label>
-                <Input
-                  id="edit-projectUrl"
-                  value={currentProject.projectUrl}
-                  onChange={(e) => setCurrentProject({...currentProject, projectUrl: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-githubUrl" className="text-right">
-                  GitHub URL
-                </Label>
-                <Input
-                  id="edit-githubUrl"
-                  value={currentProject.githubUrl}
-                  onChange={(e) => setCurrentProject({...currentProject, githubUrl: e.target.value})}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" onClick={handleEditProject}>
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Project Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Delete Project</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this project? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          {currentProject && (
-            <div className="py-4">
-              <p className="font-medium">{currentProject.title}</p>
-              <p className="text-sm text-muted-foreground mt-2">{currentProject.description}</p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button 
-              type="submit" 
+              onClick={currentProject ? handleEditProject : handleAddProject}
+            >
+              {currentProject ? "Save Changes" : "Add Project"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-muted-foreground">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-foreground">
+                "{currentProject?.title}"
+              </span>
+              ? This action cannot be undone.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
               variant="destructive" 
               onClick={handleDeleteProject}
             >
