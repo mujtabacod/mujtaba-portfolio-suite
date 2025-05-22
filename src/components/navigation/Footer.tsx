@@ -18,7 +18,7 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4 mt-6">
               <a
-                href="https://github.com/SyedMujtabaAbbas"
+                href="https://github.com/mujtabaabas"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-white transition-colors"
@@ -27,7 +27,7 @@ const Footer = () => {
                 <Github size={20} />
               </a>
               <a
-                href="#linkedin"
+                href="https://www.linkedin.com/in/syed-mujtaba-abbas-4a3441366/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-white transition-colors"
@@ -36,7 +36,7 @@ const Footer = () => {
                 <Linkedin size={20} />
               </a>
               <a
-                href="mailto:s4mujtaba555@gmail.com"
+                href="mailto:abbasmujtaba125@gmail.com"
                 className="text-gray-300 hover:text-white transition-colors"
                 aria-label="Email"
               >
@@ -76,8 +76,8 @@ const Footer = () => {
             <div className="space-y-4">
               <div className="flex items-center">
                 <Mail size={18} className="mr-3 text-white" />
-                <a href="mailto:s4mujtaba555@gmail.com" className="text-gray-300 hover:text-white transition-colors">
-                  s4mujtaba555@gmail.com
+                <a href="mailto:abbasmujtaba125@gmail.com" className="text-gray-300 hover:text-white transition-colors">
+                  abbasmujtaba125@gmail.com
                 </a>
               </div>
               <div className="flex items-center">

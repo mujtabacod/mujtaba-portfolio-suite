@@ -164,10 +164,10 @@ const Contact = () => {
                   <div>
                     <h3 className="font-medium">Email</h3>
                     <a 
-                      href="mailto:s4mujtaba555@gmail.com" 
+                      href="mailto:abbasmujtaba125@gmail.com" 
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      s4mujtaba555@gmail.com
+                      abbasmujtaba125@gmail.com
                     </a>
                   </div>
                 </div>
@@ -204,7 +204,7 @@ const Contact = () => {
               <h2 className="text-xl font-semibold mb-6">Connect With Me</h2>
               <div className="flex flex-wrap gap-3">
                 <a 
-                  href="https://github.com/SyedMujtabaAbbas" 
+                  href="https://github.com/mujtabaabas" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-secondary/50 p-3 rounded-full hover:bg-primary/20 transition-colors"
@@ -212,7 +212,7 @@ const Contact = () => {
                   <Github size={24} />
                 </a>
                 <a 
-                  href="#" 
+                  href="https://www.linkedin.com/in/syed-mujtaba-abbas-4a3441366/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="bg-secondary/50 p-3 rounded-full hover:bg-primary/20 transition-colors"

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Card, 
@@ -20,12 +19,12 @@ const AdminProfile = () => {
   const { user } = useAuth();
   
   const [profileData, setProfileData] = useState({
-    fullName: "John Doe",
+    fullName: "Syed Mujtaba Abbas",
     jobTitle: "Full Stack Developer",
-    email: user?.email || "",
-    phone: "+1 (555) 123-4567",
-    location: "New York, NY",
-    website: "johndoe.com",
+    email: user?.email || "abbasmujtaba125@gmail.com",
+    phone: "+92 346-0630802",
+    location: "Pakistan",
+    website: "github.com/mujtabaabas",
     bio: "I'm a passionate developer with over 5 years of experience in creating modern web applications using React, TypeScript, and Node.js. I enjoy solving complex problems and creating beautiful user interfaces.",
     skills: "React, TypeScript, JavaScript, Node.js, Express, MongoDB, PostgreSQL, HTML, CSS, Tailwind CSS, Git",
   });
@@ -332,7 +331,7 @@ const AdminProfile = () => {
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Account created: May 15, 2025
+                Account created: May 22, 2025
               </div>
             </CardFooter>
           </Card>

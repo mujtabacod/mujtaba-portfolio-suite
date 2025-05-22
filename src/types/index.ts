@@ -18,6 +18,10 @@ export interface BlogPost {
   coverImage: string;
   publishedDate: string;
   tags: string[];
+  date?: string; // For compatibility with admin pages
+  author?: string; // For compatibility with admin pages
+  readTime?: string; // For compatibility with admin pages
+  category?: string; // For compatibility with admin pages
 }
 
 export interface Skill {

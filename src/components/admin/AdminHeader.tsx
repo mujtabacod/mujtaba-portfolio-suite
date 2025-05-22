@@ -26,10 +26,10 @@ const AdminHeader = ({ toggleSidebar }: AdminHeaderProps) => {
         
         <div className="flex items-center">
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium mr-2">
-            {user?.email.charAt(0).toUpperCase()}
+            {user?.email && user.email.charAt(0).toUpperCase()}
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-medium">{user?.email}</p>
+            <p className="text-sm font-medium">{user?.email || 'abbasmujtaba125@gmail.com'}</p>
             <p className="text-xs text-muted-foreground">Administrator</p>
           </div>
         </div>

@@ -31,19 +31,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
       // In a real app, you would make an API call to authenticate
       // Mock login for now
-      if (email === 'admin@example.com' && password === 'password') {
+      if (username === "m.j_syed" && password === "mujtaba110") {
         const userData: User = {
           id: '1',
-          email,
+          email: 'abbasmujtaba125@gmail.com',
         };
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
-        throw new Error('Invalid email or password');
+        throw new Error('Invalid username or password');
       }
     } catch (error) {
       console.error('Login failed:', error);
