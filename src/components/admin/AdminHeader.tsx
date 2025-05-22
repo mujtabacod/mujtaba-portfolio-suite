@@ -4,12 +4,16 @@ import { Bell, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 
-const AdminHeader = () => {
+interface AdminHeaderProps {
+  toggleSidebar: () => void;
+}
+
+const AdminHeader = ({ toggleSidebar }: AdminHeaderProps) => {
   const { user } = useAuth();
 
   return (
     <header className="h-16 bg-secondary border-b border-border/20 flex items-center px-4">
-      <Button variant="ghost" size="icon" className="md:hidden mr-2">
+      <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={toggleSidebar}>
         <Menu size={24} />
       </Button>
       
